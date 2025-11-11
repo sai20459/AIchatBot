@@ -4,9 +4,13 @@ require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
 
+// imports
+const openai = require("./routes/openai");
+
 const app = express();
 
 app.use(express.json());
+app.use(express.text());
 
 // CORS config
 app.use(
@@ -35,10 +39,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/", (req, res, next) => {
-  res.send("chatbot there! Welcome.");
-});
-
+app.use("/api/openai", openai);
 // if no route found
 // app.all("*", (req, res, next) => {
 //   const url = req.originalUrl;
