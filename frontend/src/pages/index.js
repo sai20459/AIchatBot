@@ -19,7 +19,7 @@ export default function Home() {
           </div>
         </header>
         {/* Main content grows to fill height */}
-        <main className="flex-grow flex flex-col items-center text-center mt-20 px-4">
+        <main className="flex-grow flex flex-col items-center  mt-20 px-4">
           {/* Tool Sections */}
           <div className="w-full max-w-6xl px-4 mb-12">
             <AIgen />
