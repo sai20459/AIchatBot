@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { use, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import bot from "../assets/bot.svg";
 import user from "../assets/user.svg";
 import send from "../assets/send.svg";
@@ -18,6 +18,7 @@ import {
   Scatter,
   PieChart,
   Pie,
+  Cell,
 } from "recharts";
 
 const uniqueId = () =>
@@ -30,7 +31,20 @@ const presetPrompts = [
   "Create structured content that describes a blockchain consensus algorithm where nodes randomly change roles, messages can arrive out of order, and transaction hashes can be strings or numbers. Include a dataset showing this inconsistent behaviour. Need code for demonstrating the algorithm in TypeScript.",
   "Explain how to design a SOC level two security automation workflow including detection engineering, enrichment pipelines, alert triage, threat scoring, and automated containment. Provide dataset of event logs and charts showing event category distribution.",
 ];
+const PALETTE = [
+  "#60A5FA",
+  "#34D399",
+  "#FBBF24",
+  "#F87171",
+  "#A78BFA",
+  "#22D3EE",
+  "#FB7185",
+  "#F97316",
+];
 
+function colorByIndex(i) {
+  return PALETTE[i % PALETTE.length];
+}
 export default function AIgen() {
   const [aiData, setAiData] = useState({ dataset: [], charts: [] });
   const [messages, setMessages] = useState([]);
@@ -49,13 +63,7 @@ export default function AIgen() {
       return obj;
     });
   }
-  // function JsonBlock({ data }) {
-  //   return (
-  //     <pre className="bg-black/60 text-green-300 text-xs p-3 rounded overflow-x-auto whitespace-pre-wrap mt-2">
-  //       {JSON.stringify(data, null, 2)}
-  //     </pre>
-  //   );
-  // }
+
   function JsonBlock({ data }) {
     const jsonText = JSON.stringify(data, null, 2);
     const [copied, setCopied] = useState(false);
@@ -68,7 +76,6 @@ export default function AIgen() {
 
     return (
       <div className="relative bg-black/60 rounded p-3 mt-2">
-        {/* Copy button */}
         <button
           onClick={handleCopy}
           className="absolute top-2 right-2 text-xs bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded"
@@ -76,7 +83,6 @@ export default function AIgen() {
           {copied ? "Copied!" : "Copy"}
         </button>
 
-        {/* JSON content */}
         <pre className="text-green-300 text-xs overflow-x-auto whitespace-pre-wrap pt-6">
           {jsonText}
         </pre>
@@ -85,7 +91,6 @@ export default function AIgen() {
   }
 
   function DatasetTable({ dataset }) {
-    console.log(dataset, "datasetdatasetdataset");
     if (!dataset) return null;
     return (
       <div className="mt-4 bg-black/40 rounded p-3 text-xs overflow-x-auto">
@@ -117,14 +122,13 @@ export default function AIgen() {
   }
 
   function ChartsView({ dataset, charts }) {
-    console.log(dataset, charts, "dataset, charts");
     if (!dataset || !charts || charts.length === 0) return null;
 
     const data = toObjects(dataset);
 
     return (
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {charts.map((chart) => {
+        {charts.map((chart, index) => {
           if (chart.chart_type === "bar") {
             return (
               <div
@@ -139,7 +143,7 @@ export default function AIgen() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey={chart.y_field} />
+                    <Bar dataKey={chart.y_field} fill={colorByIndex(index)} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -160,7 +164,12 @@ export default function AIgen() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey={chart.y_field} dot={false} />
+                    <Line
+                      type="monotone"
+                      dataKey={chart.y_field}
+                      dot={false}
+                      stroke={colorByIndex(index)}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -180,7 +189,11 @@ export default function AIgen() {
                     <YAxis dataKey={chart.y_field} />
                     <Tooltip />
                     <Legend />
-                    <Scatter data={data} dataKey={chart.y_field} />
+                    <Scatter
+                      data={data}
+                      dataKey={chart.y_field}
+                      fill={colorByIndex(index)}
+                    />
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
@@ -203,7 +216,11 @@ export default function AIgen() {
                       dataKey={chart.y_field}
                       nameKey={chart.x_field}
                       outerRadius="80%"
-                    />
+                    >
+                      {data.map((_, i) => (
+                        <Cell key={i} fill={colorByIndex(i)} />
+                      ))}
+                    </Pie>
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -263,7 +280,6 @@ export default function AIgen() {
     setInput("");
     setTimeout(scrollToBottom, 0);
 
-    // start loader on bot bubble
     setTimeout(() => {
       const botEl = document.getElementById(botMsg.id);
       if (botEl) startLoader(botEl);
@@ -294,7 +310,6 @@ export default function AIgen() {
       }
 
       const data = await res.json();
-      // const segments = data?.response?.data?.analysis_blocks || [];
       const d = data?.response?.data || data?.data || {};
       const segments = d.analysis_blocks || [];
       const dataset = d.dataset;
@@ -316,16 +331,12 @@ export default function AIgen() {
           `Example Code:\n${seg.example_code}`
         );
       });
-      // .join("\n\n-----------------------------\n\n");
 
       if (!botEl) {
         console.log(botEl.textContent, "botEl");
         botEl.textContent = "";
         typeText(botEl, text, () => setIsTyping(false));
       } else {
-        // setMessages((prev) =>
-        //   prev.map((m) => (m.id === botMsg.id ? { ...m, content: text } : m))
-        // );
         setMessages((prev) =>
           prev.map((m) =>
             m.id === botMsg.id
@@ -354,19 +365,16 @@ export default function AIgen() {
     }
   };
 
-  console.log(aiData, "aiData");
   return (
-    <div
-    // className="flex flex-col items-center min-h-screen"
-    >
-      <div className="w-full  mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+    <div>
+      <div className="w-full mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
         {presetPrompts.map((prompt) => (
           <button
             key={prompt}
             type="button"
             onClick={() => handleSubmit(prompt)}
             disabled={isTyping}
-            className="flex items-center gap-2 rounded px-3 py-2 bg-black/60 text-white text-lg backdrop-blur-md disabled:opacity-60"
+            className="flex items-center gap-2 rounded px-3 py-2 bg-black/60 text-black text-lg backdrop-blur-md disabled:opacity-60"
           >
             <Image src={send} alt="send" width={20} height={20} />
             <span className="text-left">{prompt}</span>
@@ -379,27 +387,6 @@ export default function AIgen() {
         className="w-full h-[70vh] overflow-y-auto rounded p-3 space-y-3"
       >
         {messages.map((m) => (
-          // <div
-          //   key={m.id}
-          //   className={`wrapper ${m.role === "assistant" ? "ai" : ""}`}
-          // >
-          //   <div className="chat flex gap-3 items-start">
-          //     <div className="profile shrink-0 w-8 h-8 rounded-full overflow-hidden border">
-          //       <Image
-          //         src={m.role === "assistant" ? bot : user}
-          //         alt={m.role === "assistant" ? "bot" : "user"}
-          //         width={32}
-          //         height={32}
-          //       />
-          //     </div>
-          //     <div
-          //       id={m.id}
-          //       className="message whitespace-pre-wrap leading-relaxed"
-          //     >
-          //       {m.content}
-          //     </div>
-          //   </div>
-          // </div>
           <div
             key={m.id}
             className={`wrapper ${m.role === "assistant" ? "ai" : ""}`}
@@ -427,32 +414,14 @@ export default function AIgen() {
                     <ChartsView dataset={m.dataset} charts={m.charts} />
                   </>
                 )}
-                {m.role === "assistant" && m && <JsonBlock data={m.dataset} />}
+                {m.role === "assistant" && m.dataset && (
+                  <JsonBlock data={m.dataset} />
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
-
-      {/* <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-2xl mt-4 flex gap-2"
-      >
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="flex-1 border rounded p-2 min-h-[60px]"
-          placeholder="Ask something…"
-        />
-        <button
-          type="submit"
-          disabled={isTyping}
-          className="px-4 py-2 rounded bg-black text-white disabled:opacity-60"
-        >
-          <Image src={send} alt={"send"} width={32} height={32} />
-          {isTyping ? "…" : "Send"}
-        </button>
-      </form> */}
     </div>
   );
 }

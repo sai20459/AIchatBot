@@ -84,10 +84,8 @@ Important:
     },
     temperature: 0.5,
   });
-  // const jsonText = response;
   return JSON.parse(response?.choices[0].message?.content);
 }
-// llm_explainer.js
 async function explainAndSegment(structuredContent) {
   const contentToExplain = JSON.stringify(structuredContent, null, 2);
 
@@ -176,7 +174,7 @@ Important:
       },
     ],
     response_format: { type: "json_object" },
-    temperature: 0.4, // Lower temperature for more consistent analysis
+    temperature: 0.4,
   });
   const jsonText = response?.choices[0].message.content;
   return JSON.parse(jsonText);

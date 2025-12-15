@@ -73,7 +73,7 @@ body {
 }
 
 .ai {
-  background: #40414f;
+  background: #cdc1bc00;
 }
 
 .chat {
@@ -108,7 +108,7 @@ body {
 
 .message {
   flex: 1;
-  color: #dcdcdc;
+  color: #070707;
   font-size: 20px;
   max-width: 100%;
   overflow-x: scroll;
