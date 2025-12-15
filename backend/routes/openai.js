@@ -2,7 +2,6 @@ const { OpenAI } = require("openai");
 const { Router } = require("express");
 
 const router = Router();
-const prisma = require("../services/prisma");
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
