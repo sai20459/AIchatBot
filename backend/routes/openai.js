@@ -191,7 +191,7 @@ router.post("/create", async (req, res, next) => {
 
     console.log(finalOutput, "finalOutput");
     return res.json({
-      response: { data: finalOutput },
+      response: { data: finalOutput, llm1data: structuredContent },
     });
   } catch (error) {
     res.status(500).json({ error: " Internal server error during generation" });

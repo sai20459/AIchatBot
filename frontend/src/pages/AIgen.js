@@ -46,7 +46,6 @@ function colorByIndex(i) {
   return PALETTE[i % PALETTE.length];
 }
 export default function AIgen() {
-  const [aiData, setAiData] = useState({ dataset: [], charts: [] });
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -311,13 +310,11 @@ export default function AIgen() {
 
       const data = await res.json();
       const d = data?.response?.data || data?.data || {};
+      const combined_output = data?.response;
       const segments = d.analysis_blocks || [];
       const dataset = d.dataset;
       const charts = d.charts || [];
-      setAiData({
-        dataset: data?.response?.data?.dataset,
-        charts: data?.response?.data?.charts,
-      });
+
       const text = segments.map((seg, idx) => {
         const tips =
           seg.general_tips && seg.general_tips.length
@@ -333,7 +330,6 @@ export default function AIgen() {
       });
 
       if (!botEl) {
-        console.log(botEl.textContent, "botEl");
         botEl.textContent = "";
         typeText(botEl, text, () => setIsTyping(false));
       } else {
@@ -345,6 +341,7 @@ export default function AIgen() {
                   content: text,
                   dataset,
                   charts,
+                  combined_output,
                 }
               : m
           )
@@ -381,47 +378,67 @@ export default function AIgen() {
           </button>
         ))}
       </div>
-      <div
-        // id="chat_container"
-        ref={chatRef}
-        className="w-full h-[70vh] overflow-y-auto rounded p-3 space-y-3"
-      >
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`wrapper ${m.role === "assistant" ? "ai" : ""}`}
-          >
-            <div className="chat flex gap-3 items-start">
-              <div className="profile shrink-0 w-8 h-8 rounded-full overflow-hidden border">
-                <Image
-                  src={m.role === "assistant" ? bot : user}
-                  alt={m.role === "assistant" ? "bot" : "user"}
-                  width={32}
-                  height={32}
-                />
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
+      {messages.length > 0 ? (
+        <div
+          // id="chat_container"
+          ref={chatRef}
+          className="w-full h-[70vh] overflow-y-auto rounded p-3 space-y-3"
+        >
+          {messages.map(
+            (m) => (
+              console.log(m, "mes  "),
+              (
                 <div
-                  id={m.id}
-                  className="message whitespace-pre-wrap leading-relaxed"
+                  key={m.id}
+                  className={`wrapper ${m.role === "assistant" ? "ai" : ""}`}
                 >
-                  {m.content}
-                </div>
+                  <div className="chat flex gap-3 items-start">
+                    <div className="profile shrink-0 w-8 h-8 rounded-full overflow-hidden border">
+                      <Image
+                        src={m.role === "assistant" ? bot : user}
+                        alt={m.role === "assistant" ? "bot" : "user"}
+                        width={32}
+                        height={32}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div
+                        id={m.id}
+                        className="message whitespace-pre-wrap leading-relaxed"
+                      >
+                        {m.content}
+                      </div>
 
-                {m.role === "assistant" && (m.dataset || m.charts) && (
-                  <>
-                    <DatasetTable dataset={m.dataset} />
-                    <ChartsView dataset={m.dataset} charts={m.charts} />
-                  </>
-                )}
-                {m.role === "assistant" && m.dataset && (
-                  <JsonBlock data={m.dataset} />
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                      {m.role === "assistant" && (m.dataset || m.charts) && (
+                        <>
+                          <DatasetTable dataset={m.dataset} />
+                          <ChartsView dataset={m.dataset} charts={m.charts} />
+                        </>
+                      )}
+                      {m.role === "assistant" && m.combined_output && (
+                        <>
+                          <div className="rounded border  p-3">
+                            <div className="text-sm font-semibold mb-2 text-black">
+                              LLM 1 output
+                            </div>
+                            <JsonBlock data={m.combined_output.llm1data} />
+                          </div>
+                          <div className="rounded border p-3">
+                            <div className="text-sm font-semibold mb-2 text-black">
+                              LLM 2 output
+                            </div>
+                            <JsonBlock data={m.combined_output.data} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            )
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

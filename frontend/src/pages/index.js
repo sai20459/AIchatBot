@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>GenAI Assistant</title>
+        <title>Adaptive AI to literacy</title>
       </Head>
 
       <div className="flex flex-col min-h-screen bg-gray-200 text-white font-sans">
@@ -13,7 +13,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/">
               <span className="text-2xl font-bold bg-white text-transparent bg-clip-text">
-                AI Assistant
+                Adaptive AI to literacy
               </span>
             </Link>
           </div>
